@@ -1,26 +1,47 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+import { interval, range } from "rxjs";
+import {
+  map,
+  take,
+  toArray,
+  bufferCount,
+  startWith,
+  bufferTime,
+  takeLast,
+  scan
+} from "rxjs/operators";
+
+const values = ({
+  bitcoin: { min: btcMin, max: btcMax },
+  etherum: { min: ethMin, max: ethMax }
+}) => {
+  const btc = interval(1000)
+    .pipe(map(() => Math.random()))
+    .pipe(
+      scan((acc, val) => {
+        acc.push(val);
+        return acc.slice(-30);
+      }, [])
+    );
+
+  return btc;
+};
+
+const App = () => {
+  const [stream, setStream] = React.useState();
+
+  React.useEffect(() => {
+    values({
+      bitcoin: { min: 1, max: 5 },
+      etherum: { min: 20, max: 30 }
+    }).subscribe(val => {
+      console.log(val);
+      setStream(val);
+    });
+  }, []);
+
+  return <div className="App">{stream}</div>;
+};
 
 export default App;
